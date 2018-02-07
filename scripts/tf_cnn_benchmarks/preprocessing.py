@@ -20,7 +20,7 @@ from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 from tensorflow.contrib.data.python.ops import batching
-from tensorflow.contrib.data.python.ops import interleave_ops
+# from tensorflow.contrib.data.python.ops import interleave_ops
 from tensorflow.contrib.image.python.ops import distort_image_ops
 from tensorflow.python.layers import utils
 from tensorflow.python.ops import data_flow_ops

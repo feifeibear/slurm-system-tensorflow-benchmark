@@ -19,11 +19,12 @@ export LOG_DIR=${CUR_DIR}/log/${DATASET}_${NETWORK_NAME}_${NUM_NODE}_${BATCH_SIZ
 #https://github.com/yihui-he/resnet-cifar10-caffe/tree/master/resnet-56
 #we need to divide epochs by number of cores
 mpirun -np ${NUM_NODE} python3 ../scripts/tf_cnn_benchmarks/tf_cnn_benchmarks.py \
+--num_gpus=0 \
+--local_parameter_device=cpu \
 ${PYTHON_FLAGS} \
 --batch_size=${BATCH_SIZE} \
 --data_dir=${DATA_DIR} \
 --train_dir=${LOG_DIR}/data_dir \
---piecewise_learning_rate_schedule="0.1;${FIRST_DECAY};0.01;${SECOND_DECAY};0.001" \
 > ${LOG_DIR}/performance.log
 
 deactivate

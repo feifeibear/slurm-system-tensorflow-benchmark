@@ -179,7 +179,7 @@ flags.DEFINE_float('minimum_learning_rate', 0,
                    'never decay past this value. Requires `learning_rate`, '
                    '`num_epochs_per_decay` and `learning_rate_decay_factor` to '
                    'be set.')
-flags.DEFINE_boolean('customized_lr', True,
+flags.DEFINE_boolean('customized_lr', False,
                     'define lr by youself')
 flags.DEFINE_float('momentum', 0.9, 'Momentum for training.')
 flags.DEFINE_float('rmsprop_decay', 0.9, 'Decay term for RMSProp.')
@@ -774,20 +774,18 @@ def get_learning_rate(params, global_step, num_examples_per_epoch, model,
   Raises:
     ValueError: Invalid or unsupported params.
   """
-  #fjr add customized_lr
-  if params.customized_lr == True:
-    if train_step < 6240:
-      return 0.1 + 0.3 * global_step / 6240.0
-    elif train_step < 37440:
-      return 0.4
-    elif train_step < 74880:
-      return 0.1 * 0.4
-    elif train_step < 99840:
-      return 0.01 * 0.4
-    else:
-      return 0.001 * 0.4
-
   num_batches_per_epoch = (float(num_examples_per_epoch) / batch_size)
+  if params.customized_lr == True:
+    def f1(global_step):
+        #return tf.train.exponential_decay(0.1, global_step, 6240, 0.3, staircase=True)
+        return 0.1 + 0.3 * global_step/6240.0
+    def f2(global_step):
+       return  tf.train.piecewise_constant(global_step,
+            [37440, 74880, 99840], [0.4, 0.04, 0.004, 0.0004])
+    return tf.cond(
+        tf.less(global_step, 6240),
+        lambda: f1(global_step),
+        lambda: f2(global_step))
 
 
   if params.piecewise_learning_rate_schedule:

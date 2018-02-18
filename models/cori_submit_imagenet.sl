@@ -1,7 +1,7 @@
 #!/bin/bash -l
-#SBATCH -p debug
+#SBATCH -p regular 
 #SBATCH -C knl,quad,cache
-#SBATCH -t 00:30:00
+#SBATCH -t 30:00:00
 #SBATCH -L SCRATCH
 #SBATCH -J google_benchmark
 #SBATCH --output=benchmark_imagenet.%j.log
@@ -38,6 +38,8 @@ mkdir -p ${LOG_DIR}
 srun -N ${NUM_NODE} -n ${NUM_NODE} -c 272 python ../scripts/tf_cnn_benchmarks/tf_cnn_benchmarks.py \
 --num_gpus=1 \
 --local_parameter_device=cpu \
+--customized_lr=True \
+--device=cpu \
 ${PYTHON_FLAGS} \
 --data_format=NHWC \
 --batch_size=${BATCH_SIZE} \

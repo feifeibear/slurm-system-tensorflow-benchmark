@@ -778,7 +778,7 @@ def get_learning_rate(params, global_step, num_examples_per_epoch, model,
   if params.customized_lr == True:
     def f1(global_step):
         #return tf.train.exponential_decay(0.1, global_step, 6240, 0.3, staircase=True)
-        return 0.1 + 0.3 * global_step/6240.0
+        return 0.1 + 0.3 * tf.cast(global_step, dtype=tf.float32)/6240.0
     def f2(global_step):
        return  tf.train.piecewise_constant(global_step,
             [37440, 74880, 99840], [0.4, 0.04, 0.004, 0.0004])

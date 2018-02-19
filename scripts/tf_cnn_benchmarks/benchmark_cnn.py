@@ -179,7 +179,7 @@ flags.DEFINE_float('minimum_learning_rate', 0,
                    'never decay past this value. Requires `learning_rate`, '
                    '`num_epochs_per_decay` and `learning_rate_decay_factor` to '
                    'be set.')
-flags.DEFINE_boolean('customized_lr', False,
+flags.DEFINE_string('customized_lr', None,
                     'define lr by youself')
 flags.DEFINE_float('momentum', 0.9, 'Momentum for training.')
 flags.DEFINE_float('rmsprop_decay', 0.9, 'Decay term for RMSProp.')
@@ -775,7 +775,7 @@ def get_learning_rate(params, global_step, num_examples_per_epoch, model,
     ValueError: Invalid or unsupported params.
   """
   num_batches_per_epoch = (float(num_examples_per_epoch) / batch_size)
-  if params.customized_lr == True:
+  if params.customized_lr == "resnet50_imagenet_1024":
     def f1(global_step):
         #return tf.train.exponential_decay(0.1, global_step, 6240, 0.3, staircase=True)
         return 0.1 + 0.3 * tf.cast(global_step, dtype=tf.float32)/6240.0
@@ -786,6 +786,9 @@ def get_learning_rate(params, global_step, num_examples_per_epoch, model,
         tf.less(global_step, 6240),
         lambda: f1(global_step),
         lambda: f2(global_step))
+  elif params.customized_lr == "resnet56_cifar_128":
+    return  tf.train.piecewise_constant(global_step,
+            [32031, 48046, 117187], [0.1, 0.01, 0.001, 0.002])
 
 
   if params.piecewise_learning_rate_schedule:

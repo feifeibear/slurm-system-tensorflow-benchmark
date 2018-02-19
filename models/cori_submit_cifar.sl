@@ -1,10 +1,10 @@
 #!/bin/bash -l
-#SBATCH -p regular
+#SBATCH -p debug
 #SBATCH -C knl,quad,cache
-#SBATCH -t 30:00:00
+#SBATCH -t 00:30:00
 #SBATCH -L SCRATCH
 #SBATCH -J google_benchmark
-#SBATCH --output=benchmark_imagenet.%j.log
+#SBATCH --output=cifar_benchmark.%j.log
 
 module load tensorflow/intel-horovod-mpi-head
 
@@ -17,17 +17,20 @@ export INTER_TH=3
 export INTRA_TH=66
 
 # set dataset
-#export DATA_DIR=${SCRATCH}/data/cifar-10-batches-py
-#export DATASET="cifar10"
-export DATA_DIR=${SCRATCH}/data/imagenet
-export DATASET="imagenet"
+export DATA_DIR=${SCRATCH}/data/cifar-10-batches-py
+export DATASET="cifar10"
+#export DATA_DIR=/data2/fjr
+#export DATASET="imagenet"
 
 # set model
-source ./imagenet/resnet50.env
+source ./cifar/resnet56.env
 
 # set batch size
 export NUM_NODE=${SLURM_JOB_NUM_NODES}
-BATCH_SIZE=128
+BATCH_SIZE=`expr 128 / ${NUM_NODE}`
+FIRST_DECAY=`expr 80 / ${NUM_NODE}`
+SECOND_DECAY=`expr 122 / ${NUM_NODE}`
+echo "FIRST_DECAY : " $FIRST_DECAY " SECOND_DECAY: " $SECOND_DECAY
 
 # set log dir
 export CUR_DIR=`pwd`
@@ -38,8 +41,6 @@ mkdir -p ${LOG_DIR}
 srun -N ${NUM_NODE} -n ${NUM_NODE} -c 272 python ../scripts/tf_cnn_benchmarks/tf_cnn_benchmarks.py \
 --num_gpus=1 \
 --local_parameter_device=cpu \
---customized_lr=True \
---device=cpu \
 ${PYTHON_FLAGS} \
 --data_format=NHWC \
 --batch_size=${BATCH_SIZE} \

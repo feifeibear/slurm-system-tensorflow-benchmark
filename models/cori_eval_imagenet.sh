@@ -9,6 +9,15 @@
 
 # Run the following commands on host_0 (10.0.0.1):
 module load tensorflow/intel-horovod-mpi-head
+# set KNL env
+export OMP_NUM_THREADS=66
+KMP_AFFINITY="granularity=fine,noverbose,compact,1,0"
+KMP_SETTINGS=1
+KMP_BLOCKTIME=1
+export INTER_TH=3
+export INTRA_TH=66
+
+
 
 export DATA_DIR=${SCRATCH}/data/imagenet
 export DATASET="imagenet"
@@ -27,13 +36,18 @@ srun -N 1 -n 1 -c 272 python ../scripts/tf_cnn_benchmarks/tf_cnn_benchmarks.py \
 --num_gpus=1 \
 --device=cpu \
 --use_datasets=False \
+--variable_update=horovod \
+--momentum=0.9 \
 --batch_size=100 \
 --data_name=${DATASET} \
 --data_dir=${DATA_DIR} \
 --eval_dir=${LOG_DIR}/eval_dir \
 --train_dir=${LOG_DIR}/data_dir \
+--optimizer=${OPT} \
 --model=${NETWORK_NAME} \
 --data_format=NHWC \
+--num_inter_threads=${INTER_TH} \
+--num_intra_threads=${INTRA_TH} \
 > ${LOG_DIR}/eval.log
 
 tail -f ${LOG_DIR}/eval.log

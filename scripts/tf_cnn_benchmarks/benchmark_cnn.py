@@ -777,7 +777,6 @@ def get_learning_rate(params, global_step, num_examples_per_epoch, model,
   num_batches_per_epoch = (float(num_examples_per_epoch) / batch_size)
   if params.customized_lr == "resnet50_imagenet_1024":
     def f1(global_step):
-        #return tf.train.exponential_decay(0.1, global_step, 6240, 0.3, staircase=True)
         return 0.1 + 0.3 * tf.cast(global_step, dtype=tf.float32)/6240.0
     def f2(global_step):
        return  tf.train.piecewise_constant(global_step,
@@ -786,10 +785,34 @@ def get_learning_rate(params, global_step, num_examples_per_epoch, model,
         tf.less(global_step, 6240),
         lambda: f1(global_step),
         lambda: f2(global_step))
+
+  elif params.customized_lr == "resnet50_imagenet_8096":
+    def f1(global_step):
+        return 0.1 + 3.1 * tf.cast(global_step, dtype=tf.float32)/780.0
+    def f2(global_step):
+       return  tf.train.piecewise_constant(global_step,
+            [4680, 9360, 12480], [3.2, 0.32, 0.032, 0.0032])
+    return tf.cond(
+        tf.less(global_step, 780),
+        lambda: f1(global_step),
+        lambda: f2(global_step))
+
   elif params.customized_lr == "resnet56_cifar_128":
     return  tf.train.piecewise_constant(global_step,
             [32031, 48046, 117187], [0.1, 0.01, 0.001, 0.002])
 
+  elif params.customized_lr == "resnet56_cifar_512":
+    #50000/512 = 97.65
+    def f1(global_step):
+        #return tf.train.exponential_decay(0.1, global_step, 6240, 0.3, staircase=True)
+        return 0.1 + 0.3 * tf.cast(global_step, dtype=tf.float32)/(98 * 5)
+    def f2(global_step):
+       return  tf.train.piecewise_constant(global_step,
+            [80*98, 122*98], [0.4, 0.04, 0.004])
+    return tf.cond(
+        tf.less(global_step, 98*5),
+        lambda: f1(global_step),
+        lambda: f2(global_step))
 
   if params.piecewise_learning_rate_schedule:
     # fjr fix horovod piecewise_learning_rate_schedule bug
@@ -1238,7 +1261,8 @@ class BenchmarkCNN(object):
       summary = tf.Summary()
       summary.value.add(tag='eval/Accuracy@1', simple_value=accuracy_at_1)
       summary.value.add(tag='eval/Accuracy@5', simple_value=accuracy_at_5)
-      summary_writer.add_summary(summary, global_step)
+      #fjr change x-axis to epoch_number
+      summary_writer.add_summary(summary, global_step=epoch_number)
       log_fn('Accuracy @ 1 = %.4f Accuracy @ 5 = %.4f [%d examples]' %
              (accuracy_at_1, accuracy_at_5, total_eval_count))
       elapsed_time = loop_end_time - loop_start_time

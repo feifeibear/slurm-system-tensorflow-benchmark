@@ -1,7 +1,8 @@
 #!/bin/bash -l
 #SBATCH -p regular
 #SBATCH -C knl,quad,cache
-#SBATCH -t 30:00:00
+#SBATCH -t 5:00:00
+#SBATCH -N 256
 #SBATCH -L SCRATCH
 #SBATCH -J google_benchmark
 #SBATCH --output=benchmark_imagenet.%j.log
@@ -23,11 +24,11 @@ export DATA_DIR=${SCRATCH}/data/imagenet
 export DATASET="imagenet"
 
 # set model
-source ./imagenet/resnet50.env
+source ./imagenet/resnet50_8K.env
 
 # set batch size
 export NUM_NODE=${SLURM_JOB_NUM_NODES}
-BATCH_SIZE=128
+BATCH_SIZE=32
 
 # set log dir
 export CUR_DIR=`pwd`

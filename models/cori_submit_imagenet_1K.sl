@@ -1,11 +1,10 @@
 #!/bin/bash -l
-#SBATCH -p debug
+#SBATCH -p regular
 #SBATCH -C knl,quad,cache
-#SBATCH -t 0:20:00
-#SBATCH -N 256
+#SBATCH -t 30:00:00
 #SBATCH -L SCRATCH
 #SBATCH -J google_benchmark
-#SBATCH --output=benchmark_imagenet.%j.log
+#SBATCH --output=./slurm_log/benchmark_imagenet.%j.log
 
 module load tensorflow/intel-horovod-mpi-head
 
@@ -24,11 +23,11 @@ export DATA_DIR=${SCRATCH}/data/imagenet
 export DATASET="imagenet"
 
 # set model
-source ./imagenet/resnet50_8K.env
+source ./imagenet/resnet50_1K.env
 
 # set batch size
 export NUM_NODE=${SLURM_JOB_NUM_NODES}
-BATCH_SIZE=32
+BATCH_SIZE=128
 
 # set log dir
 export CUR_DIR=`pwd`
